@@ -501,7 +501,7 @@ export default function OrdersPage() {
                                   <InputLabel>Товар</InputLabel>
                                   <Select
                                     value={item.product_id}
-                                    onChange={(e) => handleItemChange(index, 'product_id', parseInt(e.target.value))}
+                                    onChange={(e) => handleItemChange(index, 'product_id', parseInt(String(e.target.value)))}
                                     label="Товар"
                                   >
                                     {products.map((prod) => (

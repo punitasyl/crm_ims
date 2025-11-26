@@ -349,6 +349,27 @@ Developed to demonstrate full-stack development skills.
 
 ---
 
+## 🌐 Deployment
+
+This project can be deployed to free hosting platforms. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+### Quick Deploy Options
+
+- **Railway** (Recommended) - Free tier with $5 credits/month
+- **Render** - Free tier with limitations
+- **Vercel** - Excellent for Next.js frontend
+
+### Quick Start
+
+1. **Backend**: Deploy to Railway or Render
+2. **Frontend**: Deploy to Vercel
+3. Set environment variables (see DEPLOYMENT.md)
+4. Update CORS settings with your frontend URL
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
 ## 🔮 Future Plans
 
 - [ ] Reports and analytics system
