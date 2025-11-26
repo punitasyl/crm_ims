@@ -6,7 +6,7 @@ import os
 class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = int(os.getenv("PORT", "8000"))  # Use PORT from environment for deployment
     DEBUG: bool = True
     
     # Database (SQLite for development)
