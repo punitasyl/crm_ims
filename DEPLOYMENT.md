@@ -55,11 +55,13 @@ Railway offers $5 free credits per month, which is perfect for small projects.
    - Click "Add New" → "Project"
    - Import your GitHub repository
 
-3. **Configure Project**
+3. **Configure Project** ⚠️ **IMPORTANT**
    - **Framework Preset**: Next.js
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build` (auto-detected)
+   - **Root Directory**: `frontend` ← **This is crucial!**
+   - **Build Command**: `npm run build` (auto-detected after setting Root Directory)
    - **Output Directory**: `.next` (auto-detected)
+   
+   **Note**: If you don't set Root Directory to `frontend`, Vercel will look for package.json in the root and fail.
 
 4. **Set Environment Variables**
    - Go to "Environment Variables"
