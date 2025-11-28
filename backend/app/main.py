@@ -9,10 +9,19 @@ from app.database import engine, Base
 from app.routers import auth, customers, products, inventory, orders, leads, upload, warehouses, suppliers, purchase_orders, users
 from app.config import settings
 
+# Import all models to ensure they are registered with Base before creating tables
+# This ensures all tables are created on first startup
+from app.models import (
+    User, Customer, Contact, Category, Product, Warehouse,
+    Inventory, Supplier, PurchaseOrder, PurchaseOrderItem,
+    SalesOrder, OrderItem, Lead, Opportunity
+)
+
 # Load environment variables
 load_dotenv()
 
-# Create database tables
+# Create database tables automatically on startup
+# This will create all tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
