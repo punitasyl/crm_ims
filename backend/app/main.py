@@ -31,6 +31,9 @@ if os.getenv('DATABASE_URL'):
     masked = db_url[:30] + "..." if len(db_url) > 30 else db_url
     print(f"   DATABASE_URL value: {masked}")
 print(f"   POSTGRES_URL in env: {'✅ YES' if os.getenv('POSTGRES_URL') else '❌ NO'}")
+print(f"   CORS_ORIGINS in env: {'✅ YES' if os.getenv('CORS_ORIGINS') else '❌ NO'}")
+if os.getenv('CORS_ORIGINS'):
+    print(f"   CORS_ORIGINS value: {os.getenv('CORS_ORIGINS')}")
 print(f"📊 Settings DATABASE_URL: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"📊 Settings DATABASE_URL: {settings.DATABASE_URL}")
 print("🔨 Creating database tables...")
 
@@ -59,9 +62,12 @@ app = FastAPI(
 
 # CORS middleware - Allow requests from frontend
 # Must be added BEFORE routes to handle preflight requests
+cors_origins = settings.cors_origins_list
+print(f"🌐 CORS Origins configured: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],

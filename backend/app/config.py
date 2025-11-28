@@ -64,5 +64,9 @@ if os.getenv("PORT"):
     except ValueError:
         pass
 
+# Also handle CORS_ORIGINS from environment
+if os.getenv("CORS_ORIGINS"):
+    _settings.CORS_ORIGINS = os.getenv("CORS_ORIGINS")
+
 settings = _settings
 
