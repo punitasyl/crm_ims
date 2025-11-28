@@ -1,7 +1,15 @@
 import axios from 'axios';
 
+// Get API URL from environment variable
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Ensure baseURL ends with /api
+// If NEXT_PUBLIC_API_URL is set to https://crmims-production.up.railway.app
+// it will become https://crmims-production.up.railway.app/api
+const baseURL = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
