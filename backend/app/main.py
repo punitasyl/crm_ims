@@ -57,7 +57,8 @@ print("=" * 50)
 app = FastAPI(
     title="CRM IMS API",
     description="Customer Relationship Management and Inventory Management System API",
-    version="1.0.0"
+    version="1.0.0",
+    redirect_slashes=False  # Disable automatic redirects for trailing slashes to prevent 307 errors
 )
 
 # CORS middleware - Allow requests from frontend

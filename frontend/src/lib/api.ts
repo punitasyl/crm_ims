@@ -3,10 +3,12 @@ import axios from 'axios';
 // Get API URL from environment variable
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-// Ensure baseURL ends with /api
+// Ensure baseURL ends with /api (without trailing slash)
 // If NEXT_PUBLIC_API_URL is set to https://crmims-production.up.railway.app
 // it will become https://crmims-production.up.railway.app/api
-const baseURL = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+let baseURL = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+// Remove trailing slash to avoid 307 redirects
+baseURL = baseURL.replace(/\/$/, '');
 
 const api = axios.create({
   baseURL: baseURL,
