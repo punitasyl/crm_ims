@@ -23,14 +23,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // Ensure URL ends with / for routes that expect it (to avoid 307 redirects)
-  // FastAPI routes with @router.get("/") expect trailing slash
-  if (config.url && !config.url.includes('?') && !config.url.match(/\/\d+$/)) {
-    // Add trailing slash for routes that don't have query params or end with ID
-    if (!config.url.endsWith('/')) {
-      config.url = config.url + '/';
-    }
-  }
+  // Note: FastAPI will automatically handle trailing slash redirects
+  // No need to modify URLs here - axios will follow redirects automatically
   // Debug: Log request URL in development
   if (process.env.NODE_ENV === 'development') {
     const fullUrl = config.baseURL ? `${config.baseURL}${config.url || ''}` : config.url;
