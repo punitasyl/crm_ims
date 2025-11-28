@@ -22,7 +22,27 @@ load_dotenv()
 
 # Create database tables automatically on startup
 # This will create all tables if they don't exist
-Base.metadata.create_all(bind=engine)
+print("=" * 50)
+print("🚀 Starting CRM IMS Backend...")
+print(f"📊 Database URL: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"📊 Database URL: {settings.DATABASE_URL}")
+print("🔨 Creating database tables...")
+
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database tables created successfully!")
+    print(f"📋 Created {len(Base.metadata.tables)} tables:")
+    for table_name in sorted(Base.metadata.tables.keys()):
+        print(f"   ✓ {table_name}")
+except Exception as e:
+    print(f"❌ ERROR: Failed to create database tables!")
+    print(f"   Error: {str(e)}")
+    print(f"   Type: {type(e).__name__}")
+    import traceback
+    traceback.print_exc()
+    # Don't exit - let the app start anyway, but log the error
+    # This allows the app to start even if tables already exist
+
+print("=" * 50)
 
 app = FastAPI(
     title="CRM IMS API",

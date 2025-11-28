@@ -11,7 +11,12 @@ class Settings(BaseSettings):
     
     # Database (SQLite for development, PostgreSQL for production)
     # Use DATABASE_URL from environment variable, fallback to SQLite for local dev
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./crm_ims.db")
+    # Railway provides DATABASE_URL automatically for PostgreSQL services
+    # Also check POSTGRES_URL (some Railway setups use this)
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL", 
+        os.getenv("POSTGRES_URL", "sqlite:///./crm_ims.db")
+    )
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "crm_ims"
