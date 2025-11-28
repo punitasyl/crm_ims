@@ -72,6 +72,9 @@ async def create_product(
     
     # Convert Pydantic model to dict, excluding None values only for optional fields
     product_dict = product_data.dict(exclude_unset=False)
+    # Ensure category_id is None (not 0) if no category is selected
+    if product_dict.get('category_id') == 0:
+        product_dict['category_id'] = None
     db_product = Product(**product_dict)
     db.add(db_product)
     db.commit()
@@ -92,6 +95,10 @@ async def update_product(
         raise HTTPException(status_code=404, detail="Product not found")
     
     update_data = product_data.dict(exclude_unset=True)
+    
+    # Ensure category_id is None (not 0) if no category is selected
+    if update_data.get('category_id') == 0:
+        update_data['category_id'] = None
     
     # Check SKU uniqueness if being updated
     if "sku" in update_data and update_data["sku"] != product.sku:

@@ -199,7 +199,10 @@ export default function ProductsPage() {
         unit: 'sqm', // Всегда м² по умолчанию
         length_mm: formData.length_mm ? parseInt(formData.length_mm) : null,
         width_mm: formData.width_mm ? parseInt(formData.width_mm) : null,
-        category_id: formData.category_id ? parseInt(formData.category_id) : null,
+        // Convert empty string or '0' to null for category_id
+        category_id: formData.category_id && formData.category_id !== '' && formData.category_id !== '0' 
+          ? parseInt(formData.category_id) 
+          : null,
         image_url: imageUrl || null,
       };
       
