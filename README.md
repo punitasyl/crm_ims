@@ -186,7 +186,7 @@ The script will prompt for:
 - Last name
 - Password
 
-### Step 4: Start Backend Server
+### Step 5: Start Backend Server
 
 ```bash
 # Start with auto-reload
@@ -197,7 +197,7 @@ Backend will be available at: `http://localhost:8000`
 - **API Documentation (Swagger)**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
 
-### Step 5: Frontend Setup
+### Step 6: Frontend Setup
 
 ```bash
 # Navigate to frontend directory
@@ -207,7 +207,7 @@ cd frontend
 npm install
 ```
 
-### Step 6: Start Frontend
+### Step 7: Start Frontend
 
 ```bash
 npm run dev

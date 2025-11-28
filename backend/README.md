@@ -22,12 +22,29 @@ cp .env.example .env
 ```
 
 4. Set up the database:
-```bash
-# Create database
-createdb crm_ims
 
-# Run migrations (when using Alembic)
-alembic upgrade head
+**For PostgreSQL (Production):**
+```bash
+# Set DATABASE_URL environment variable
+export DATABASE_URL="postgresql://user:password@localhost:5432/crm_ims"
+
+# Initialize database tables
+python init_postgresql.py
+```
+
+**For SQLite (Development - Default):**
+```bash
+# Tables are created automatically on first startup
+# No additional setup needed
+```
+
+**Migrate data from SQLite to PostgreSQL (if needed):**
+```bash
+# Set DATABASE_URL to PostgreSQL
+export DATABASE_URL="postgresql://user:password@localhost:5432/crm_ims"
+
+# Run migration script
+python migrate_sqlite_to_postgresql.py
 ```
 
 5. Create an admin user:

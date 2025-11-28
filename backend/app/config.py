@@ -9,8 +9,9 @@ class Settings(BaseSettings):
     PORT: int = int(os.getenv("PORT", "8000"))  # Use PORT from environment for deployment
     DEBUG: bool = True
     
-    # Database (SQLite for development)
-    DATABASE_URL: str = "sqlite:///./crm_ims.db"
+    # Database (SQLite for development, PostgreSQL for production)
+    # Use DATABASE_URL from environment variable, fallback to SQLite for local dev
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./crm_ims.db")
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "crm_ims"

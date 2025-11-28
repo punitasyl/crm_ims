@@ -8,6 +8,30 @@ This guide will help you deploy CRM IMS to free hosting platforms.
 - Railway account (or Render account)
 - Vercel account (for frontend)
 
+## 💾 Database Storage
+
+### ⚠️ Important: SQLite vs PostgreSQL
+
+**SQLite (Development Only)**
+- ✅ Good for local development
+- ❌ **NOT suitable for production hosting**
+- ❌ Data stored in file (`crm_ims.db`)
+- ❌ File system is ephemeral on hosting platforms (data lost on restart)
+- ❌ No concurrent write support
+
+**PostgreSQL (Production Recommended)**
+- ✅ Persistent data storage
+- ✅ Handles concurrent connections
+- ✅ Reliable for production
+- ✅ Free tier available on Railway/Render
+- ✅ Automatic backups
+
+**For production deployment, you MUST use PostgreSQL!**
+
+The application automatically detects the database type from `DATABASE_URL`:
+- `sqlite:///...` → SQLite (development)
+- `postgresql://...` → PostgreSQL (production)
+
 ---
 
 ## 🎯 Option 1: Railway (Recommended)
@@ -23,29 +47,38 @@ Railway offers $5 free credits per month, which is perfect for small projects.
    - Select "Deploy from GitHub repo"
    - Choose your repository
 
-3. **Add Service**
-   - Click "New" → "Service"
-   - Select your repository
+3. **Configure Service**
    - Railway will auto-detect Python
+   - Set **Root Directory** to `backend`
+   - Railway will automatically detect `requirements.txt`
 
-4. **Configure Service**
-   - **Root Directory**: `backend`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. **Add PostgreSQL Database** (Recommended for Production)
+   - Click "New" → "Database" → "Add PostgreSQL"
+   - Railway will create a PostgreSQL database and provide a connection URL
+   - Copy the `DATABASE_URL` (it will look like: `postgresql://user:password@host:port/dbname`)
 
 5. **Set Environment Variables**
    - Go to "Variables" tab
    - Add these variables:
      ```
      SECRET_KEY=your-very-secure-random-secret-key-here
-     CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://your-frontend-domain.vercel.app
-     DATABASE_URL=sqlite:///./crm_ims.db
+     CORS_ORIGINS=https://your-frontend-domain.vercel.app
+     DATABASE_URL=<your-postgresql-url-from-step-4>
      ```
+   - **Important**: Use the PostgreSQL DATABASE_URL from step 4, NOT SQLite
    - Generate a secure SECRET_KEY (you can use: `python -c "import secrets; print(secrets.token_urlsafe(32))"`)
 
-6. **Get Backend URL**
+6. **Initialize Database**
+   - After first deployment, go to "Deployments" → Click on the deployment → "View Logs"
+   - Tables will be created automatically on first startup (via `Base.metadata.create_all()`)
+   - OR use Railway's shell to run: `python init_postgresql.py`
+   - Create admin user: `python create_admin.py`
+
+7. **Get Backend URL**
    - After deployment, Railway will provide a URL like: `https://your-app.railway.app`
    - Copy this URL for frontend configuration
+
+**Note**: SQLite is NOT recommended for production as the file system is ephemeral. Use PostgreSQL for data persistence.
 
 ### Frontend Deployment on Vercel
 
@@ -55,36 +88,30 @@ Railway offers $5 free credits per month, which is perfect for small projects.
    - Click "Add New" → "Project"
    - Import your GitHub repository
 
-3. **Configure Project** ⚠️ **IMPORTANT**
-   - **Framework Preset**: Next.js
-   - **Root Directory**: `frontend` ← **This is crucial!**
-   - **Build Command**: `npm run build` (auto-detected after setting Root Directory)
-   - **Output Directory**: `.next` (auto-detected)
-   
-   **Note**: If you don't set Root Directory to `frontend`, Vercel will look for package.json in the root and fail.
+3. **Configure Project**
+   - **Root Directory**: Set to `frontend`
+   - Framework Preset: Next.js (auto-detected)
+   - Build Command: `npm run build` (default)
+   - Output Directory: `.next` (default)
 
 4. **Set Environment Variables**
-   - Go to "Environment Variables"
+   - Go to "Settings" → "Environment Variables"
    - Add:
      ```
      NEXT_PUBLIC_API_URL=https://your-backend.railway.app
      ```
+   - Replace with your actual Railway backend URL
 
 5. **Deploy**
    - Click "Deploy"
-   - Vercel will build and deploy your app
+   - Vercel will build and deploy your frontend
    - You'll get a URL like: `https://your-app.vercel.app`
-
-6. **Update Backend CORS**
-   - Go back to Railway backend settings
-   - Update `CORS_ORIGINS` to include your Vercel URL:
-     ```
-     CORS_ORIGINS=https://your-app.vercel.app
-     ```
 
 ---
 
 ## 🎯 Option 2: Render
+
+Render offers free tier with some limitations (spins down after 15 minutes of inactivity).
 
 ### Backend Deployment on Render
 
@@ -95,41 +122,88 @@ Railway offers $5 free credits per month, which is perfect for small projects.
    - Connect your GitHub repository
 
 3. **Configure Service**
-   - **Name**: `crm-ims-backend`
+   - **Name**: `crm-ims-backend` (or your choice)
    - **Environment**: Python 3
+   - **Build Command**: `cd backend && pip install -r requirements.txt`
+   - **Start Command**: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
    - **Root Directory**: `backend`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-4. **Set Environment Variables**
+4. **Add PostgreSQL Database** (Recommended for Production)
+   - Click "New" → "PostgreSQL"
+   - Render will create a PostgreSQL database
+   - Copy the "Internal Database URL" or "External Database URL"
+
+5. **Set Environment Variables**
    - Scroll to "Environment Variables"
    - Add:
      ```
      SECRET_KEY=your-very-secure-random-secret-key-here
      CORS_ORIGINS=https://your-frontend-domain.vercel.app
-     DATABASE_URL=sqlite:///./crm_ims.db
+     DATABASE_URL=<your-postgresql-url-from-step-4>
      ```
+   - **Important**: Use PostgreSQL DATABASE_URL, NOT SQLite
+   - Generate a secure SECRET_KEY (you can use: `python -c "import secrets; print(secrets.token_urlsafe(32))"`)
 
-5. **Deploy**
+6. **Deploy**
    - Click "Create Web Service"
    - Render will build and deploy
    - You'll get a URL like: `https://your-app.onrender.com`
 
+**Note**: SQLite is NOT recommended for production as the file system is ephemeral. Use PostgreSQL for data persistence.
+
 ### Frontend Deployment on Vercel
 
-Follow the same steps as in Option 1 for Vercel deployment.
+Same as Option 1, but use your Render backend URL instead.
 
 ---
 
-## 🔧 Important Configuration Changes
+## 📝 Database Initialization
 
-### Backend: Update CORS Settings
+### Method 1: Automatic (Recommended)
 
-Make sure your backend accepts requests from your frontend domain. Update the `CORS_ORIGINS` environment variable with your frontend URL.
+Tables are created automatically when the backend starts for the first time via `Base.metadata.create_all()` in `app/main.py`.
 
-### Frontend: Update API URL
+### Method 2: Manual Script
 
-Make sure `NEXT_PUBLIC_API_URL` points to your backend URL.
+If you need to initialize manually:
+
+1. **Connect to your PostgreSQL database** (via Railway/Render shell or locally with DATABASE_URL)
+
+2. **Run initialization script**:
+   ```bash
+   python backend/init_postgresql.py
+   ```
+
+3. **Create admin user**:
+   ```bash
+   python backend/create_admin.py
+   ```
+
+### Method 3: SQL Script
+
+You can also use the SQL migration script:
+
+1. **Connect to PostgreSQL** (via psql or database client)
+
+2. **Run the SQL script**:
+   ```bash
+   psql $DATABASE_URL -f database/migrations/001_initial_schema.sql
+   ```
+
+### Migrating Data from SQLite to PostgreSQL
+
+If you have existing data in SQLite and want to migrate to PostgreSQL:
+
+1. **Set up PostgreSQL** (as described above)
+
+2. **Set DATABASE_URL to PostgreSQL** in your environment
+
+3. **Run migration script**:
+   ```bash
+   python backend/migrate_sqlite_to_postgresql.py
+   ```
+
+   **Note**: This script will copy all data from `backend/crm_ims.db` to PostgreSQL.
 
 ---
 
@@ -139,8 +213,9 @@ Make sure `NEXT_PUBLIC_API_URL` points to your backend URL.
 - [ ] Frontend can connect to backend (check browser console)
 - [ ] CORS is properly configured
 - [ ] Environment variables are set correctly
-- [ ] Database is working (SQLite file is created)
-- [ ] Admin user can be created (run `create_admin.py` locally or via Railway/Render shell)
+- [ ] PostgreSQL database is created and connected
+- [ ] Database tables are created (automatic on first startup)
+- [ ] Admin user can be created (run `create_admin.py` via Railway/Render shell or connect locally)
 
 ---
 
@@ -157,16 +232,27 @@ Make sure `NEXT_PUBLIC_API_URL` points to your backend URL.
 - Verify `CORS_ORIGINS` includes your frontend URL
 - Check that URL doesn't have trailing slash
 
+**Problem**: Database connection errors
+- Verify `DATABASE_URL` is correct
+- Check that PostgreSQL database is running
+- Ensure `psycopg2-binary` is in `requirements.txt`
+
+**Problem**: Tables not created
+- Check backend logs for errors
+- Run `python backend/init_postgresql.py` manually
+- Verify DATABASE_URL is set correctly
+
 ### Frontend Issues
 
 **Problem**: Can't connect to backend
-- Verify `NEXT_PUBLIC_API_URL` is correct
-- Check browser console for errors
-- Verify backend is running and accessible
+- Verify `NEXT_PUBLIC_API_URL` is set correctly
+- Check backend URL is accessible (try opening in browser)
+- Check browser console for CORS errors
 
 **Problem**: Build fails
-- Check that all dependencies are in `package.json`
-- Verify Node.js version compatibility
+- Check that Root Directory is set to `frontend` in Vercel
+- Verify `package.json` is in `frontend/` directory
+- Check build logs for specific errors
 
 ---
 
@@ -175,16 +261,12 @@ Make sure `NEXT_PUBLIC_API_URL` points to your backend URL.
 1. **Never commit** `.env` files
 2. **Use strong SECRET_KEY** (generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`)
 3. **Update CORS_ORIGINS** to only include your production domains
-4. **Consider using PostgreSQL** for production instead of SQLite (Railway offers free PostgreSQL)
-
----
-
-## 💡 Tips
-
-- Railway and Render both offer free tiers with limitations
-- Vercel is excellent for Next.js and offers generous free tier
-- Consider using Railway's PostgreSQL for production (more reliable than SQLite)
-- Set up automatic deployments from GitHub (both platforms support this)
+4. **Use PostgreSQL for production** - SQLite is NOT suitable for production hosting as:
+   - File system is ephemeral (data can be lost on restart)
+   - No concurrent write support
+   - No network access
+   - Limited scalability
+5. **Protect DATABASE_URL** - Never expose it in logs or client-side code
 
 ---
 
@@ -193,4 +275,4 @@ Make sure `NEXT_PUBLIC_API_URL` points to your backend URL.
 - [Railway Documentation](https://docs.railway.app)
 - [Render Documentation](https://render.com/docs)
 - [Vercel Documentation](https://vercel.com/docs)
-
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
