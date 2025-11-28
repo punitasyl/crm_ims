@@ -57,8 +57,7 @@ print("=" * 50)
 app = FastAPI(
     title="CRM IMS API",
     description="Customer Relationship Management and Inventory Management System API",
-    version="1.0.0",
-    redirect_slashes=False  # Disable automatic redirects for trailing slashes to prevent 307 errors
+    version="1.0.0"
 )
 
 # CORS middleware - Allow requests from frontend
@@ -88,6 +87,13 @@ app.include_router(suppliers.router, prefix="/api/suppliers", tags=["Suppliers"]
 app.include_router(purchase_orders.router, prefix="/api/purchase-orders", tags=["Purchase Orders"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 
+# Debug: Print registered routes
+print("\n📋 Registered API routes:")
+for route in app.routes:
+    if hasattr(route, 'path') and hasattr(route, 'methods'):
+        methods = ', '.join(sorted(route.methods))
+        print(f"   {methods:20} {route.path}")
+
 
 @app.get("/")
 async def root():
@@ -97,6 +103,20 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/routes")
+async def list_routes():
+    """List all registered routes (for debugging)."""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods),
+                "name": getattr(route, 'name', 'N/A')
+            })
+    return {"routes": routes}
 
 
 # Global exception handler to ensure CORS headers are always sent

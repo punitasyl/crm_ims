@@ -23,6 +23,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Debug: Log request URL in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('API Request:', config.method?.toUpperCase(), config.url, 'Full URL:', config.baseURL + config.url);
+  }
   return config;
 });
 
