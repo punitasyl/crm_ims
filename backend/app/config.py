@@ -6,17 +6,15 @@ import os
 class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
-    PORT: int = int(os.getenv("PORT", "8000"))  # Use PORT from environment for deployment
+    PORT: int = 8000
     DEBUG: bool = True
     
     # Database (SQLite for development, PostgreSQL for production)
-    # Use DATABASE_URL from environment variable, fallback to SQLite for local dev
+    # Read directly from environment variable with fallback
     # Railway provides DATABASE_URL automatically for PostgreSQL services
-    # Also check POSTGRES_URL (some Railway setups use this)
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", 
-        os.getenv("POSTGRES_URL", "sqlite:///./crm_ims.db")
-    )
+    # Priority: DATABASE_URL > POSTGRES_URL > default SQLite
+    DATABASE_URL: str = "sqlite:///./crm_ims.db"
+    
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "crm_ims"
@@ -41,7 +39,30 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        env_file_encoding = 'utf-8'
 
 
-settings = Settings()
+# Create settings instance
+_settings = Settings()
+
+# Override DATABASE_URL from environment variables if they exist
+# This ensures Railway's DATABASE_URL is used even if Pydantic doesn't pick it up
+_db_url = (
+    os.getenv("DATABASE_URL") or 
+    os.getenv("POSTGRES_URL") or 
+    os.getenv("PGDATABASE_URL") or
+    _settings.DATABASE_URL
+)
+
+# Update the settings object
+_settings.DATABASE_URL = _db_url
+
+# Also handle PORT from environment (Railway provides this)
+if os.getenv("PORT"):
+    try:
+        _settings.PORT = int(os.getenv("PORT"))
+    except ValueError:
+        pass
+
+settings = _settings
 

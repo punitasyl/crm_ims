@@ -20,11 +20,18 @@ from app.models import (
 # Load environment variables
 load_dotenv()
 
-# Create database tables automatically on startup
-# This will create all tables if they don't exist
+# Debug: Check environment variables
+import os
 print("=" * 50)
 print("🚀 Starting CRM IMS Backend...")
-print(f"📊 Database URL: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"📊 Database URL: {settings.DATABASE_URL}")
+print("🔍 Environment Variables Check:")
+print(f"   DATABASE_URL in env: {'✅ YES' if os.getenv('DATABASE_URL') else '❌ NO'}")
+if os.getenv('DATABASE_URL'):
+    db_url = os.getenv('DATABASE_URL')
+    masked = db_url[:30] + "..." if len(db_url) > 30 else db_url
+    print(f"   DATABASE_URL value: {masked}")
+print(f"   POSTGRES_URL in env: {'✅ YES' if os.getenv('POSTGRES_URL') else '❌ NO'}")
+print(f"📊 Settings DATABASE_URL: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"📊 Settings DATABASE_URL: {settings.DATABASE_URL}")
 print("🔨 Creating database tables...")
 
 try:
