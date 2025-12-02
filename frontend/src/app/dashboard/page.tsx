@@ -80,14 +80,14 @@ export default function DashboardPage() {
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
-            <Typography variant="h3" fontWeight="bold">
+            <Typography variant="h3" fontWeight="bold" sx={{ fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' } }}>
               {value}
             </Typography>
-            <Typography variant="body1" sx={{ mt: 1, opacity: 0.9 }}>
+            <Typography variant="body1" sx={{ mt: 1, opacity: 0.9, fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
               {title}
             </Typography>
           </Box>
-          <Box sx={{ fontSize: 48, opacity: 0.3 }}>{icon}</Box>
+          <Box sx={{ fontSize: { xs: 32, sm: 40, md: 48 }, opacity: 0.3 }}>{icon}</Box>
         </Box>
       </CardContent>
     </Card>
@@ -97,10 +97,10 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
             Панель управления
           </Typography>
-          <Typography variant="body1" color="text.secondary" mb={3}>
+          <Typography variant="body1" color="text.secondary" mb={3} sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
             Добро пожаловать! Вот обзор вашего бизнеса.
           </Typography>
 

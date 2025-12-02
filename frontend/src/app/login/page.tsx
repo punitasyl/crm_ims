@@ -70,21 +70,21 @@ export default function LoginPage() {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
         <Paper
           elevation={24}
           sx={{
-            p: 4,
-            borderRadius: 3,
+            p: { xs: 2, sm: 4 },
+            borderRadius: { xs: 2, sm: 3 },
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(10px)',
           }}
         >
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="h4" component="h1" fontWeight="bold" color="primary">
+          <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+            <Typography variant="h4" component="h1" fontWeight="bold" color="primary" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
               CRM IMS
             </Typography>
-            <Typography variant="body2" color="text.secondary" mt={1}>
+            <Typography variant="body2" color="text.secondary" mt={1} sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
               Войдите в свой аккаунт
             </Typography>
           </Box>

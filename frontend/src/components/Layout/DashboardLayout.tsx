@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
+import { Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Menu, MenuItem, Avatar, useTheme, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -36,7 +37,14 @@ const menuItems = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -51,6 +59,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
+  const drawer = (
+    <Box>
+      <Toolbar />
+      <Box sx={{ overflow: 'auto' }}>
+        <List>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton onClick={() => { router.push(item.path); if (isMobile) setMobileOpen(false); }}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+          {user?.role === 'admin' && (
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => { router.push('/users'); if (isMobile) setMobileOpen(false); }}>
+                <ListItemIcon><PersonAddIcon /></ListItemIcon>
+                <ListItemText primary="Пользователи" />
+              </ListItemButton>
+            </ListItem>
+          )}
+        </List>
+      </Box>
+    </Box>
+  );
+
   return (
     <Box sx={{ display: 'flex' }}>
       <AppBar 
@@ -61,15 +95,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }}
       >
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap component="div" fontWeight="bold">
-            CRM IMS
-          </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2">
-              {user?.first_name} {user?.last_name}
+            {isMobile && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+            <Typography variant="h6" noWrap component="div" fontWeight="bold" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              CRM IMS
             </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
+            {!isMobile && (
+              <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {user?.first_name} {user?.last_name}
+              </Typography>
+            )}
             <IconButton onClick={handleMenu} size="small">
-              <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+              <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
                 <AccountCircleIcon />
               </Avatar>
             </IconButton>
@@ -90,40 +139,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Box>
         </Toolbar>
       </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        aria-label="navigation"
+      >
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+          }}
+        >
+          {drawer}
+        </Drawer>
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+          }}
+          open
+        >
+          {drawer}
+        </Drawer>
+      </Box>
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          p: { xs: 1, sm: 2, md: 3 },
+          width: { md: `calc(100% - ${drawerWidth}px)` }
         }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton onClick={() => router.push(item.path)}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-            {user?.role === 'admin' && (
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => router.push('/users')}>
-                  <ListItemIcon><PersonAddIcon /></ListItemIcon>
-                  <ListItemText primary="Пользователи" />
-                </ListItemButton>
-              </ListItem>
-            )}
-          </List>
-        </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         {children}
       </Box>

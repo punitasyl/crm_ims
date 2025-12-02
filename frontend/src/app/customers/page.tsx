@@ -181,13 +181,13 @@ export default function CustomersPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" fontWeight="bold">Клиенты</Typography>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>Клиенты</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => handleOpenDialog()}
-              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', width: { xs: '100%', sm: 'auto' } }}
             >
               Добавить клиента
             </Button>
@@ -215,15 +215,25 @@ export default function CustomersPage() {
             </Button>
           </Box>
 
-          <TableContainer component={Paper} elevation={2}>
-            <Table>
+          <TableContainer 
+            component={Paper} 
+            elevation={2}
+            sx={{ 
+              overflowX: 'auto',
+              '& .MuiTableCell-root': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '8px', sm: '16px' }
+              }
+            }}
+          >
+            <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'grey.100' }}>
                   <TableCell><strong>Название компании</strong></TableCell>
-                  <TableCell><strong>Контактное лицо</strong></TableCell>
-                  <TableCell><strong>Email</strong></TableCell>
-                  <TableCell><strong>Телефон</strong></TableCell>
-                  <TableCell><strong>Статус</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><strong>Контактное лицо</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}><strong>Email</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}><strong>Телефон</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><strong>Статус</strong></TableCell>
                   <TableCell><strong>Действия</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -244,10 +254,10 @@ export default function CustomersPage() {
                   customers.map((customer) => (
                     <TableRow key={customer.id} hover>
                       <TableCell>{customer.company_name}</TableCell>
-                      <TableCell>{customer.contact_person || '-'}</TableCell>
-                      <TableCell>{customer.email || '-'}</TableCell>
-                      <TableCell>{customer.phone || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{customer.contact_person || '-'}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{customer.email || '-'}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{customer.phone || '-'}</TableCell>
+                      <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         <Chip
                           label={customer.status}
                           color={getStatusColor(customer.status) as any}
@@ -277,7 +287,18 @@ export default function CustomersPage() {
             </Table>
           </TableContainer>
 
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+          <Dialog 
+            open={openDialog} 
+            onClose={handleCloseDialog} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
             <DialogTitle>
               {editingCustomer ? 'Редактировать клиента' : 'Добавить нового клиента'}
             </DialogTitle>
@@ -379,9 +400,20 @@ export default function CustomersPage() {
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Отмена</Button>
-              <Button onClick={handleSubmit} variant="contained">
+            <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: { xs: 1, sm: 0 }, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={handleCloseDialog}
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Отмена
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
                 {editingCustomer ? 'Обновить' : 'Создать'}
               </Button>
             </DialogActions>

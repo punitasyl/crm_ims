@@ -236,29 +236,39 @@ export default function ProductsPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" fontWeight="bold">Товары</Typography>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>Товары</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => handleOpenDialog()}
-              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', width: { xs: '100%', sm: 'auto' } }}
             >
               Добавить товар
             </Button>
           </Box>
 
-          <TableContainer component={Paper} elevation={2}>
-            <Table>
+          <TableContainer 
+            component={Paper} 
+            elevation={2}
+            sx={{ 
+              overflowX: 'auto',
+              '& .MuiTableCell-root': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '8px', sm: '16px' }
+              }
+            }}
+          >
+            <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'grey.100' }}>
-                  <TableCell><strong>Фото</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}><strong>Фото</strong></TableCell>
                   <TableCell><strong>Артикул</strong></TableCell>
                   <TableCell><strong>Название</strong></TableCell>
-                  <TableCell><strong>Размер</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><strong>Размер</strong></TableCell>
                   <TableCell><strong>Цена</strong></TableCell>
-                  <TableCell><strong>Себестоимость</strong></TableCell>
-                  <TableCell><strong>Статус</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}><strong>Себестоимость</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><strong>Статус</strong></TableCell>
                   <TableCell><strong>Действия</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -286,26 +296,26 @@ export default function ProductsPage() {
                       : '-';
                     return (
                       <TableRow key={product.id} hover>
-                        <TableCell>
+                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                           {imageUrl ? (
                             <Avatar
                               src={imageUrl}
                               alt={product.name}
-                              sx={{ width: 56, height: 56 }}
+                              sx={{ width: { xs: 40, md: 56 }, height: { xs: 40, md: 56 } }}
                               variant="rounded"
                             />
                           ) : (
-                            <Avatar sx={{ width: 56, height: 56, bgcolor: 'grey.300' }} variant="rounded">
+                            <Avatar sx={{ width: { xs: 40, md: 56 }, height: { xs: 40, md: 56 }, bgcolor: 'grey.300' }} variant="rounded">
                               <ImageIcon />
                             </Avatar>
                           )}
                         </TableCell>
                         <TableCell>{product.sku}</TableCell>
                         <TableCell>{product.name}</TableCell>
-                        <TableCell>{sizeDisplay}</TableCell>
+                        <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{sizeDisplay}</TableCell>
                         <TableCell>{price.toFixed(2)} ТГ</TableCell>
-                        <TableCell>{cost.toFixed(2)} ТГ</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{cost.toFixed(2)} ТГ</TableCell>
+                        <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                           <Chip
                             label={product.is_active ? 'Активный' : 'Неактивный'}
                             color={product.is_active ? 'success' : 'default'}
@@ -336,7 +346,19 @@ export default function ProductsPage() {
             </Table>
           </TableContainer>
 
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+          <Dialog 
+            open={openDialog} 
+            onClose={handleCloseDialog} 
+            maxWidth="md" 
+            fullWidth
+            fullScreen={false}
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
             <DialogTitle>
               {editingProduct ? 'Редактировать товар' : 'Добавить новый товар'}
             </DialogTitle>
@@ -482,12 +504,20 @@ export default function ProductsPage() {
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Отмена</Button>
+            <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: { xs: 1, sm: 0 }, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={handleCloseDialog}
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Отмена
+              </Button>
               <Button 
                 onClick={handleSubmit} 
                 variant="contained"
                 disabled={uploadingImage}
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {uploadingImage ? 'Загрузка...' : editingProduct ? 'Обновить' : 'Создать'}
               </Button>

@@ -362,26 +362,36 @@ export default function OrdersPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" fontWeight="bold">Заказы</Typography>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>Заказы</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleOpenDialog}
-              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', width: { xs: '100%', sm: 'auto' } }}
             >
               Создать заказ
             </Button>
           </Box>
 
-          <TableContainer component={Paper} elevation={2}>
-            <Table>
+          <TableContainer 
+            component={Paper} 
+            elevation={2}
+            sx={{ 
+              overflowX: 'auto',
+              '& .MuiTableCell-root': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                padding: { xs: '8px', sm: '16px' }
+              }
+            }}
+          >
+            <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'grey.100' }}>
                   <TableCell><strong>Номер заказа</strong></TableCell>
-                  <TableCell><strong>Дата</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}><strong>Дата</strong></TableCell>
                   <TableCell><strong>Статус</strong></TableCell>
-                  <TableCell><strong>Итого</strong></TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}><strong>Итого</strong></TableCell>
                   <TableCell><strong>Действия</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -404,7 +414,7 @@ export default function OrdersPage() {
                     return (
                       <TableRow key={order.id} hover>
                         <TableCell>{order.order_number}</TableCell>
-                        <TableCell>{new Date(order.order_date).toLocaleDateString()}</TableCell>
+                        <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{new Date(order.order_date).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Chip
                             label={getStatusLabel(order.status)}
@@ -412,7 +422,7 @@ export default function OrdersPage() {
                             size="small"
                           />
                         </TableCell>
-                        <TableCell>{total.toFixed(2)} ТГ</TableCell>
+                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{total.toFixed(2)} ТГ</TableCell>
                         <TableCell>
                           <IconButton 
                             size="small" 
@@ -430,7 +440,18 @@ export default function OrdersPage() {
             </Table>
           </TableContainer>
 
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+          <Dialog 
+            open={openDialog} 
+            onClose={handleCloseDialog} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
             <DialogTitle>Создать новый заказ</DialogTitle>
             <DialogContent>
               {error && (
@@ -645,16 +666,38 @@ export default function OrdersPage() {
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Отмена</Button>
-              <Button onClick={handleSubmit} variant="contained">
+            <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: { xs: 1, sm: 0 }, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={handleCloseDialog}
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Отмена
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
                 Создать заказ
               </Button>
             </DialogActions>
           </Dialog>
 
           {/* View Order Dialog */}
-          <Dialog open={viewDialog} onClose={() => setViewDialog(false)} maxWidth="md" fullWidth>
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
             <DialogTitle>
               Заказ {selectedOrder?.order_number}
             </DialogTitle>
@@ -909,8 +952,15 @@ export default function OrdersPage() {
                 </Box>
               )}
             </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setViewDialog(false)}>Закрыть</Button>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
+              </Button>
             </DialogActions>
           </Dialog>
         </Box>

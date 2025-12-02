@@ -135,9 +135,17 @@ export default function SuppliersPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" fontWeight="bold">Поставщики</Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>Поставщики</Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />} 
+              onClick={() => handleOpenDialog()} 
+              sx={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                width: { xs: '100%', sm: 'auto' }
+              }}
+            >
               Добавить поставщика
             </Button>
           </Box>
@@ -217,7 +225,18 @@ export default function SuppliersPage() {
             </TableContainer>
           )}
 
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+          <Dialog 
+            open={openDialog} 
+            onClose={handleCloseDialog} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
             <DialogTitle>{editingSupplier ? 'Редактировать поставщика' : 'Добавить поставщика'}</DialogTitle>
             <DialogContent>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -319,9 +338,20 @@ export default function SuppliersPage() {
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Отмена</Button>
-              <Button onClick={handleSubmit} variant="contained">
+            <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: { xs: 1, sm: 0 }, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={handleCloseDialog}
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Отмена
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
                 {editingSupplier ? 'Сохранить' : 'Создать'}
               </Button>
             </DialogActions>

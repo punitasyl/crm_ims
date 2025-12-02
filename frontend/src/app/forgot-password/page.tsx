@@ -196,8 +196,13 @@ export default function ForgotPasswordPage() {
             </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} variant="contained">
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button 
+            onClick={handleCloseDialog} 
+            variant="contained"
+            fullWidth={false}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             {tempPassword ? 'Перейти к входу' : 'Закрыть'}
           </Button>
         </DialogActions>

@@ -438,9 +438,20 @@ export default function UsersPage() {
                     </Grid>
                   </Grid>
                 </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseDialog}>Отмена</Button>
-                  <Button onClick={handleSubmit} variant="contained">
+                <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, gap: { xs: 1, sm: 0 }, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+                  <Button 
+                    onClick={handleCloseDialog}
+                    fullWidth={false}
+                    sx={{ width: { xs: '100%', sm: 'auto' } }}
+                  >
+                    Отмена
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit} 
+                    variant="contained"
+                    fullWidth={false}
+                    sx={{ width: { xs: '100%', sm: 'auto' } }}
+                  >
                     {editingUser ? 'Сохранить' : 'Создать'}
                   </Button>
                 </DialogActions>
