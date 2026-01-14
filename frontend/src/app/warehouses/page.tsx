@@ -27,6 +27,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -53,6 +54,8 @@ export default function WarehousesPage() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewingWarehouse, setViewingWarehouse] = useState<Warehouse | null>(null);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -166,6 +169,16 @@ export default function WarehousesPage() {
     }
   };
 
+  const handleView = async (id: number) => {
+    try {
+      const response = await api.get(`/warehouses/${id}`);
+      setViewingWarehouse(response.data);
+      setViewDialog(true);
+    } catch (error) {
+      console.error('Error fetching warehouse:', error);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (window.confirm('Вы уверены, что хотите удалить этот склад?')) {
       try {
@@ -245,8 +258,17 @@ export default function WarehousesPage() {
                       <TableCell>
                         <IconButton
                           size="small"
+                          onClick={() => handleView(warehouse.id)}
+                          color="info"
+                          title="Просмотр"
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
                           onClick={() => handleOpenDialog(warehouse)}
                           color="primary"
+                          title="Редактировать"
                         >
                           <EditIcon />
                         </IconButton>
@@ -254,6 +276,7 @@ export default function WarehousesPage() {
                           size="small"
                           onClick={() => handleDelete(warehouse.id)}
                           color="error"
+                          title="Удалить"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -389,6 +412,87 @@ export default function WarehousesPage() {
                 sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {editingWarehouse ? 'Обновить' : 'Создать'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* View Warehouse Dialog */}
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
+            <DialogTitle>
+              Информация о складе: {viewingWarehouse?.name}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Код</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.code || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Название</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary">Адрес</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.address || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Город</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.city || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Область</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.state || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Почтовый индекс</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.zip_code || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Страна</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.country || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Менеджер</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.manager_name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Телефон</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.phone || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingWarehouse?.email || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Статус</Typography>
+                  <Chip
+                    label={viewingWarehouse?.is_active ? 'Активен' : 'Неактивен'}
+                    color={viewingWarehouse?.is_active ? 'success' : 'default'}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
               </Button>
             </DialogActions>
           </Dialog>

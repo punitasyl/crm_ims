@@ -33,6 +33,7 @@ import {
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -70,6 +71,8 @@ export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewingItem, setViewingItem] = useState<InventoryItem | null>(null);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -215,6 +218,11 @@ export default function InventoryPage() {
     }
   };
 
+  const handleView = (item: InventoryItem) => {
+    setViewingItem(item);
+    setViewDialog(true);
+  };
+
   const handleDelete = async (id: number) => {
     if (window.confirm('Вы уверены, что хотите удалить эту запись?')) {
       try {
@@ -297,8 +305,17 @@ export default function InventoryPage() {
                         <TableCell>
                           <IconButton
                             size="small"
+                            onClick={() => handleView(item)}
+                            color="info"
+                            title="Просмотр"
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             onClick={() => handleOpenDialog(item)}
                             color="primary"
+                            title="Редактировать"
                           >
                             <EditIcon />
                           </IconButton>
@@ -306,6 +323,7 @@ export default function InventoryPage() {
                             size="small"
                             onClick={() => handleDelete(item.id)}
                             color="error"
+                            title="Удалить"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -493,6 +511,120 @@ export default function InventoryPage() {
                 sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 Обновить
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* View Inventory Dialog */}
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
+            <DialogTitle>
+              Информация об остатке на складе
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Товар</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingItem?.product?.name || '-'} ({viewingItem?.product?.sku || '-'})
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Склад</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingItem?.warehouse?.name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Количество (м²)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 'bold' }}>
+                    {viewingItem?.quantity?.toFixed(2) || '0.00'} м²
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Зарезервировано (м²)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingItem?.reserved_quantity?.toFixed(2) || '0.00'} м²
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="subtitle2" color="text.secondary">Доступно (м²)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 'bold', color: 'success.main' }}>
+                    {((viewingItem?.quantity || 0) - (viewingItem?.reserved_quantity || 0)).toFixed(2)} м²
+                  </Typography>
+                </Grid>
+                {(() => {
+                  const product = products.find(p => p.id === viewingItem?.product_id);
+                  if (product && product.length_mm && product.width_mm) {
+                    const areaPerTile = (product.length_mm * product.width_mm) / 1000000; // м²
+                    const tilesPerSqm = 1 / areaPerTile;
+                    const quantityInPieces = (viewingItem?.quantity || 0) * tilesPerSqm;
+                    const reservedInPieces = (viewingItem?.reserved_quantity || 0) * tilesPerSqm;
+                    const availableInPieces = quantityInPieces - reservedInPieces;
+                    return (
+                      <>
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
+                            Размеры товара: {product.length_mm} × {product.width_mm} мм
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="subtitle2" color="text.secondary">Количество (шт)</Typography>
+                          <Typography variant="body1" sx={{ mb: 2 }}>
+                            {quantityInPieces.toFixed(0)} шт
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="subtitle2" color="text.secondary">Зарезервировано (шт)</Typography>
+                          <Typography variant="body1" sx={{ mb: 2 }}>
+                            {reservedInPieces.toFixed(0)} шт
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Typography variant="subtitle2" color="text.secondary">Доступно (шт)</Typography>
+                          <Typography variant="body1" sx={{ mb: 2, fontWeight: 'bold', color: 'success.main' }}>
+                            {availableInPieces.toFixed(0)} шт
+                          </Typography>
+                        </Grid>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary">Статус</Typography>
+                  {(() => {
+                    const available = (viewingItem?.quantity || 0) - (viewingItem?.reserved_quantity || 0);
+                    const status = available > 0 ? 'В наличии' : available === 0 ? 'Нет в наличии' : 'Недостаточно';
+                    const color = available > 0 ? 'success' : 'default';
+                    return (
+                      <Chip
+                        label={status}
+                        color={color}
+                        size="small"
+                        sx={{ mt: 1 }}
+                      />
+                    );
+                  })()}
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
               </Button>
             </DialogActions>
           </Dialog>

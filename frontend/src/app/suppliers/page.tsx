@@ -5,7 +5,7 @@ import {
   Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Chip, Alert, CircularProgress, Grid
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon, Business as BusinessIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon, Business as BusinessIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
 import api from '@/lib/api';
@@ -27,6 +27,8 @@ export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewingSupplier, setViewingSupplier] = useState<Supplier | null>(null);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
@@ -120,6 +122,16 @@ export default function SuppliersPage() {
     }
   };
 
+  const handleView = async (id: number) => {
+    try {
+      const response = await api.get(`/suppliers/${id}`);
+      setViewingSupplier(response.data);
+      setViewDialog(true);
+    } catch (error) {
+      console.error('Error fetching supplier:', error);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (!confirm('Вы уверены, что хотите удалить этого поставщика?')) return;
     try {
@@ -210,10 +222,28 @@ export default function SuppliersPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <IconButton size="small" onClick={() => handleOpenDialog(supplier)} color="primary">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleView(supplier.id)}
+                            color="info"
+                            title="Просмотр"
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleOpenDialog(supplier)} 
+                            color="primary"
+                            title="Редактировать"
+                          >
                             <EditIcon />
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleDelete(supplier.id)} color="error">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleDelete(supplier.id)} 
+                            color="error"
+                            title="Удалить"
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </TableCell>
@@ -353,6 +383,79 @@ export default function SuppliersPage() {
                 sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {editingSupplier ? 'Сохранить' : 'Создать'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* View Supplier Dialog */}
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
+            <DialogTitle>
+              Информация о поставщике: {viewingSupplier?.name}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Код</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.code || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Название</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Контактное лицо</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.contact_person || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.email || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Телефон</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.phone || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Адрес</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.address || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Город</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.city || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Страна</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingSupplier?.country || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Статус</Typography>
+                  <Chip
+                    label={viewingSupplier?.is_active ? 'Активен' : 'Неактивен'}
+                    color={viewingSupplier?.is_active ? 'success' : 'default'}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
               </Button>
             </DialogActions>
           </Dialog>

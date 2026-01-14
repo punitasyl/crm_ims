@@ -29,6 +29,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Search as SearchIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -50,6 +51,8 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
@@ -154,6 +157,16 @@ export default function CustomersPage() {
       console.error('Error saving customer:', err.response?.data);
       const errorMsg = err.response?.data?.detail || err.response?.data?.error || 'Не удалось сохранить клиента';
       setError(Array.isArray(errorMsg) ? JSON.stringify(errorMsg) : errorMsg);
+    }
+  };
+
+  const handleView = async (id: number) => {
+    try {
+      const response = await api.get(`/customers/${id}`);
+      setViewingCustomer(response.data);
+      setViewDialog(true);
+    } catch (error) {
+      console.error('Error fetching customer:', error);
     }
   };
 
@@ -267,8 +280,17 @@ export default function CustomersPage() {
                       <TableCell>
                         <IconButton
                           size="small"
+                          onClick={() => handleView(customer.id)}
+                          color="info"
+                          title="Просмотр"
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
                           onClick={() => handleOpenDialog(customer)}
                           color="primary"
+                          title="Редактировать"
                         >
                           <EditIcon />
                         </IconButton>
@@ -276,6 +298,7 @@ export default function CustomersPage() {
                           size="small"
                           onClick={() => handleDelete(customer.id)}
                           color="error"
+                          title="Удалить"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -415,6 +438,77 @@ export default function CustomersPage() {
                 sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {editingCustomer ? 'Обновить' : 'Создать'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* View Customer Dialog */}
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
+            <DialogTitle>
+              Информация о клиенте: {viewingCustomer?.company_name}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Название компании</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.company_name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Контактное лицо</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.contact_person || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.email || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Телефон</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.phone || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Город</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.city || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Страна</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingCustomer?.country || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Статус</Typography>
+                  <Chip
+                    label={viewingCustomer?.status || '-'}
+                    color={getStatusColor(viewingCustomer?.status || '') as any}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Тип клиента</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingCustomer?.customer_type === 'business' ? 'Бизнес' : 'Частное лицо'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
               </Button>
             </DialogActions>
           </Dialog>

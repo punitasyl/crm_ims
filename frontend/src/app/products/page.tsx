@@ -30,6 +30,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Image as ImageIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -54,6 +55,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -221,6 +224,16 @@ export default function ProductsPage() {
     }
   };
 
+  const handleView = async (id: number) => {
+    try {
+      const response = await api.get(`/products/${id}`);
+      setViewingProduct(response.data);
+      setViewDialog(true);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
       try {
@@ -325,8 +338,17 @@ export default function ProductsPage() {
                         <TableCell>
                           <IconButton
                             size="small"
+                            onClick={() => handleView(product.id)}
+                            color="info"
+                            title="Просмотр"
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             onClick={() => handleOpenDialog(product)}
                             color="primary"
+                            title="Редактировать"
                           >
                             <EditIcon />
                           </IconButton>
@@ -334,6 +356,7 @@ export default function ProductsPage() {
                             size="small"
                             onClick={() => handleDelete(product.id)}
                             color="error"
+                            title="Удалить"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -520,6 +543,115 @@ export default function ProductsPage() {
                 sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {uploadingImage ? 'Загрузка...' : editingProduct ? 'Обновить' : 'Создать'}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* View Product Dialog */}
+          <Dialog 
+            open={viewDialog} 
+            onClose={() => setViewDialog(false)} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+              sx: {
+                m: { xs: 1, sm: 2 },
+                maxHeight: { xs: '95vh', sm: '90vh' }
+              }
+            }}
+          >
+            <DialogTitle>
+              Информация о товаре: {viewingProduct?.name}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                {viewingProduct?.image_url && (
+                  <Grid item xs={12} sx={{ textAlign: 'center', mb: 2 }}>
+                    <Box
+                      component="img"
+                      src={(() => {
+                        const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000';
+                        return `${baseUrl}${viewingProduct.image_url}`;
+                      })()}
+                      alt={viewingProduct.name}
+                      sx={{
+                        maxWidth: '300px',
+                        maxHeight: '300px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        boxShadow: 2,
+                      }}
+                      onError={(e: any) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </Grid>
+                )}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Артикул</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingProduct?.sku || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Название</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingProduct?.name || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary">Описание</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>{viewingProduct?.description || '-'}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Размер (мм)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingProduct?.length_mm && viewingProduct?.width_mm 
+                      ? `${viewingProduct.length_mm} × ${viewingProduct.width_mm} мм`
+                      : '-'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Единица измерения</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingProduct?.unit === 'sqm' ? 'м²' : viewingProduct?.unit || '-'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Цена (ТГ)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingProduct?.price 
+                      ? (typeof viewingProduct.price === 'number' 
+                        ? viewingProduct.price.toFixed(2) 
+                        : parseFloat(String(viewingProduct.price)).toFixed(2))
+                      : '0.00'} ТГ
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Себестоимость (ТГ)</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {viewingProduct?.cost 
+                      ? (typeof viewingProduct.cost === 'number' 
+                        ? viewingProduct.cost.toFixed(2) 
+                        : parseFloat(String(viewingProduct.cost)).toFixed(2))
+                      : '-'} ТГ
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Статус</Typography>
+                  <Chip
+                    label={viewingProduct?.is_active ? 'Активный' : 'Неактивный'}
+                    color={viewingProduct?.is_active ? 'success' : 'default'}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+              <Button 
+                onClick={() => setViewDialog(false)}
+                variant="contained"
+                fullWidth={false}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Закрыть
               </Button>
             </DialogActions>
           </Dialog>
