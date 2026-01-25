@@ -9,7 +9,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material';
 import { 
-  Add as AddIcon, Visibility as VisibilityIcon, CheckCircle as CheckCircleIcon, Delete as DeleteIcon
+  Add as AddIcon, Visibility as VisibilityIcon, CheckCircle as CheckCircleIcon, Delete as DeleteIcon, Remove as RemoveIcon
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -540,25 +540,121 @@ export default function PurchaseOrdersPage() {
                                       <ToggleButton value="piece">шт</ToggleButton>
                                     </ToggleButtonGroup>
                                   </Box>
-                                  <TextField
-                                    fullWidth
-                                    label="Количество"
-                                    type="number"
-                                    value={item.quantity}
-                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                    required
-                                    inputProps={{ 
-                                      step: item.quantity_unit === 'sqm' ? '0.001' : '1', 
-                                      min: '0' 
-                                    }}
-                                    InputProps={{
-                                      endAdornment: (
-                                        <InputAdornment position="end">
-                                          {item.quantity_unit === 'sqm' ? 'м²' : 'шт'}
-                                        </InputAdornment>
-                                      )
-                                    }}
-                                  />
+                                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                                    {(() => {
+                                      if (item.quantity_unit === 'sqm') {
+                                        const areaPerTile = product && product.length_mm && product.width_mm 
+                                          ? calculateTileArea(product.length_mm, product.width_mm) 
+                                          : 0;
+                                        return (
+                                          <IconButton
+                                            onClick={() => {
+                                              const currentValue = parseFloat(String(item.quantity)) || 0;
+                                              const newValue = currentValue - areaPerTile;
+                                              const roundedValue = newValue >= 0 
+                                                ? (Math.round(newValue / areaPerTile) * areaPerTile).toFixed(3)
+                                                : '0';
+                                              handleItemChange(index, 'quantity', roundedValue);
+                                            }}
+                                            disabled={areaPerTile === 0}
+                                            sx={{ mt: 1 }}
+                                            title="Уменьшить на площадь одной плитки"
+                                            color="error"
+                                            size="small"
+                                          >
+                                            <RemoveIcon />
+                                          </IconButton>
+                                        );
+                                      } else {
+                                        return (
+                                          <IconButton
+                                            onClick={() => {
+                                              const currentValue = parseFloat(String(item.quantity)) || 0;
+                                              const newValue = Math.max(0, Math.round(currentValue) - 1);
+                                              handleItemChange(index, 'quantity', newValue.toString());
+                                            }}
+                                            sx={{ mt: 1 }}
+                                            title="Уменьшить на 1 штуку"
+                                            color="error"
+                                            size="small"
+                                          >
+                                            <RemoveIcon />
+                                          </IconButton>
+                                        );
+                                      }
+                                    })()}
+                                    <TextField
+                                      fullWidth
+                                      label="Количество"
+                                      type="number"
+                                      value={item.quantity}
+                                      onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                      onBlur={(e) => {
+                                        // Автоматическое округление до кратного площади одной плитки при потере фокуса
+                                        if (item.quantity_unit === 'sqm' && product && product.length_mm && product.width_mm) {
+                                          const areaPerTile = calculateTileArea(product.length_mm, product.width_mm);
+                                          const inputValue = parseFloat(e.target.value) || 0;
+                                          if (areaPerTile > 0 && inputValue > 0) {
+                                            const tiles = Math.round(inputValue / areaPerTile);
+                                            const roundedValue = (tiles * areaPerTile).toFixed(3);
+                                            handleItemChange(index, 'quantity', roundedValue);
+                                          }
+                                        }
+                                      }}
+                                      required
+                                      inputProps={{ 
+                                        step: item.quantity_unit === 'sqm' ? '0.001' : '1', 
+                                        min: '0' 
+                                      }}
+                                      InputProps={{
+                                        endAdornment: (
+                                          <InputAdornment position="end">
+                                            {item.quantity_unit === 'sqm' ? 'м²' : 'шт'}
+                                          </InputAdornment>
+                                        )
+                                      }}
+                                    />
+                                    {(() => {
+                                      if (item.quantity_unit === 'sqm') {
+                                        const areaPerTile = product && product.length_mm && product.width_mm 
+                                          ? calculateTileArea(product.length_mm, product.width_mm) 
+                                          : 0;
+                                        return (
+                                          <IconButton
+                                            onClick={() => {
+                                              const currentValue = parseFloat(String(item.quantity)) || 0;
+                                              const newValue = currentValue + areaPerTile;
+                                              const roundedValue = (Math.round(newValue / areaPerTile) * areaPerTile).toFixed(3);
+                                              handleItemChange(index, 'quantity', roundedValue);
+                                            }}
+                                            disabled={areaPerTile === 0}
+                                            sx={{ mt: 1 }}
+                                            title="Увеличить на площадь одной плитки"
+                                            color="primary"
+                                            size="small"
+                                          >
+                                            <AddIcon />
+                                          </IconButton>
+                                        );
+                                      } else {
+                                        return (
+                                          <IconButton
+                                            onClick={() => {
+                                              const currentValue = parseFloat(String(item.quantity)) || 0;
+                                              const newValue = Math.round(currentValue) + 1;
+                                              handleItemChange(index, 'quantity', newValue.toString());
+                                            }}
+                                            sx={{ mt: 1 }}
+                                            title="Увеличить на 1 штуку"
+                                            color="primary"
+                                            size="small"
+                                          >
+                                            <AddIcon />
+                                          </IconButton>
+                                        );
+                                      }
+                                    })()}
+                                  </Box>
                                   {product && product.length_mm && product.width_mm && (
                                     <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                                       Площадь 1 плитки: {calculateTileArea(product.length_mm, product.width_mm).toFixed(2)} м² | 

@@ -34,6 +34,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
 } from '@mui/icons-material';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ProtectedRoute from '@/components/Auth/ProtectedRoute';
@@ -451,25 +453,125 @@ export default function InventoryPage() {
                         <ToggleButton value="piece">шт</ToggleButton>
                       </ToggleButtonGroup>
                     </Box>
-                    <TextField
-                      fullWidth
-                      label="Количество"
-                      type="number"
-                      value={formData.adjustment_quantity}
-                      onChange={(e) => setFormData({ ...formData, adjustment_quantity: e.target.value })}
-                      required
-                      inputProps={{ 
-                        min: 0, 
-                        step: formData.quantity_unit === 'sqm' ? 0.001 : 1 
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {formData.quantity_unit === 'sqm' ? 'м²' : 'шт'}
-                          </InputAdornment>
-                        )
-                      }}
-                    />
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                      {(() => {
+                        const product = products.find(p => p.id === parseInt(formData.product_id));
+                        if (formData.quantity_unit === 'sqm') {
+                          const areaPerTile = product && product.length_mm && product.width_mm 
+                            ? calculateTileArea(product.length_mm, product.width_mm) 
+                            : 0;
+                          return (
+                            <IconButton
+                              onClick={() => {
+                                const currentValue = parseFloat(formData.adjustment_quantity) || 0;
+                                const newValue = currentValue - areaPerTile;
+                                const roundedValue = newValue >= 0 
+                                  ? (Math.round(newValue / areaPerTile) * areaPerTile).toFixed(3)
+                                  : '0';
+                                setFormData({ ...formData, adjustment_quantity: roundedValue });
+                              }}
+                              disabled={areaPerTile === 0}
+                              sx={{ mt: 1 }}
+                              title="Уменьшить на площадь одной плитки"
+                              color="error"
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                          );
+                        } else {
+                          // Для единицы "шт" уменьшаем на 1
+                          return (
+                            <IconButton
+                              onClick={() => {
+                                const currentValue = parseFloat(formData.adjustment_quantity) || 0;
+                                const newValue = Math.max(0, Math.round(currentValue) - 1);
+                                setFormData({ ...formData, adjustment_quantity: newValue.toString() });
+                              }}
+                              sx={{ mt: 1 }}
+                              title="Уменьшить на 1 штуку"
+                              color="error"
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                          );
+                        }
+                      })()}
+                      <TextField
+                        fullWidth
+                        label="Количество"
+                        type="number"
+                        value={formData.adjustment_quantity}
+                        onChange={(e) => setFormData({ ...formData, adjustment_quantity: e.target.value })}
+                        onBlur={(e) => {
+                          // Автоматическое округление до кратного площади одной плитки при потере фокуса
+                          if (formData.quantity_unit === 'sqm') {
+                            const product = products.find(p => p.id === parseInt(formData.product_id));
+                            if (product && product.length_mm && product.width_mm) {
+                              const areaPerTile = calculateTileArea(product.length_mm, product.width_mm);
+                              const inputValue = parseFloat(e.target.value) || 0;
+                              if (areaPerTile > 0 && inputValue > 0) {
+                                // Округляем до ближайшего кратного площади одной плитки
+                                const tiles = Math.round(inputValue / areaPerTile);
+                                const roundedValue = (tiles * areaPerTile).toFixed(3);
+                                setFormData({ ...formData, adjustment_quantity: roundedValue });
+                              }
+                            }
+                          }
+                        }}
+                        required
+                        inputProps={{ 
+                          min: 0, 
+                          step: formData.quantity_unit === 'sqm' ? 0.001 : 1 
+                        }}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {formData.quantity_unit === 'sqm' ? 'м²' : 'шт'}
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                      {(() => {
+                        const product = products.find(p => p.id === parseInt(formData.product_id));
+                        if (formData.quantity_unit === 'sqm') {
+                          const areaPerTile = product && product.length_mm && product.width_mm 
+                            ? calculateTileArea(product.length_mm, product.width_mm) 
+                            : 0;
+                          return (
+                            <IconButton
+                              onClick={() => {
+                                const currentValue = parseFloat(formData.adjustment_quantity) || 0;
+                                const newValue = currentValue + areaPerTile;
+                                const roundedValue = (Math.round(newValue / areaPerTile) * areaPerTile).toFixed(3);
+                                setFormData({ ...formData, adjustment_quantity: roundedValue });
+                              }}
+                              disabled={areaPerTile === 0}
+                              sx={{ mt: 1 }}
+                              title="Увеличить на площадь одной плитки"
+                              color="primary"
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          );
+                        } else {
+                          // Для единицы "шт" увеличиваем на 1
+                          return (
+                            <IconButton
+                              onClick={() => {
+                                const currentValue = parseFloat(formData.adjustment_quantity) || 0;
+                                const newValue = Math.round(currentValue) + 1;
+                                setFormData({ ...formData, adjustment_quantity: newValue.toString() });
+                              }}
+                              sx={{ mt: 1 }}
+                              title="Увеличить на 1 штуку"
+                              color="primary"
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          );
+                        }
+                      })()}
+                    </Box>
                     {(() => {
                       const product = products.find(p => p.id === parseInt(formData.product_id));
                       if (product && product.length_mm && product.width_mm) {
